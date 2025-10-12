@@ -4,14 +4,19 @@
 #include <stdint.h>
 #include <string.h>
 
-// Uncomment the following line if compiling for Arduino
-// #define __ARDUINO__
-
 #define STX         0xAA
 #define ETX         0xDD
 #define SPACE       0x7D
-#define BUFFER_SIZE 256
 #define CRC_SIZE    1
+
+
+#ifndef Arduino_h
+#define BUFFER_SIZE 256
+#else
+#define BUFFER_SIZE 128
+#endif // Arduino_h
+
+// Format packet: STX | Data... | CRC | ETX
 
 #ifdef __cplusplus
 extern "C" {

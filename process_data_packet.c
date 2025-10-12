@@ -34,9 +34,7 @@ uint8_t decoderData(const uint8_t *src, uint8_t len, uint8_t *dst)
         uint8_t b = src[i];
         if (b == SPACE) {
             if (i + 1 >= len) {
-#ifndef __ARDUINO__
                 printf("Decoding error: SPACE at end of buffer.\n");
-#endif // __ARDUINO__
                 break;
             }
             dst[idx++] = src[++i] ^ SPACE; // unescape
@@ -76,19 +74,15 @@ uint8_t decoderAllPackage(const uint8_t *src, uint8_t len, uint8_t *dst)
 
     // Check CRC validity
     if (idx < 2) {
-#ifndef __ARDUINO__
         printf("Invalid package size, discarding.\n");
-#endif // __ARDUINO__
         return 0;
     }
 
     uint8_t received_crc = buff[idx - 1];
     uint8_t calculated_crc = calculateCRC(buff, idx - 1);
     if (received_crc != calculated_crc) {
-#ifndef __ARDUINO__
         printf("CRC mismatch, discarding package. Received: %02X, Calculated: %02X\n", received_crc,
                calculated_crc);
-#endif // __ARDUINO__
         return 0;
     }
 
@@ -119,18 +113,14 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
 
             // Check for buffer overflow
             if (buf_index >= (BUFFER_SIZE - 1)) {
-#ifndef __ARDUINO__
                 printf("Buffer overflow, discarding data.\n");
-#endif // __ARDUINO__
                 step = 0;
                 break;
             }
 
             // Check missing ETX
             if (byte == STX) {
-#ifndef __ARDUINO__
                 printf("Missing ETX, discarding data.\n");
-#endif // __ARDUINO__
                 buf_index = 0;
                 break;
             }
@@ -142,9 +132,7 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
 
                 // Check data length minimum length: Type
                 if (decoded_length < 1) {
-#ifndef __ARDUINO__
                     printf("Invalid package size, discarding.\n");
-#endif // __ARDUINO__
                     step = 0;
                     break;
                 } else {
