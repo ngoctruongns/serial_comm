@@ -98,8 +98,11 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
 {
     // Buffer for reading only serial data (not STX, ETX)
     static uint8_t rx_buffer[BUFFER_SIZE] = {0};
+    static uint8_t str_buffer[BUFFER_SIZE] = {0};
     static uint8_t step = 0;
     static uint8_t buf_index = 0;
+    static uint16_t str_index = 0;
+
 
     // step 1:
     switch (step) {
@@ -107,6 +110,25 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
             if (byte == STX) {
                 buf_index = 0;
                 step = 1;
+            } else {
+                str_buffer[str_index++] = byte;
+                // Check for buffer overflow
+                if (str_index >= (BUFFER_SIZE-1)) {
+                    // Print debug string
+                    str_buffer[BUFFER_SIZE - 1] = '\0'; // Ensure null-termination
+                    printf("UART_MSG: %s\n", str_buffer);
+                    memset(str_buffer, 0, BUFFER_SIZE);
+                    str_index = 0; // Reset on overflow
+                }
+
+                if (byte == '\n' || byte == '\r') {
+                    // Print debug string
+                    if (str_index > 1) {
+                        printf("UART_MSG: %s\n", str_buffer);
+                    }
+                    memset(str_buffer, 0, BUFFER_SIZE);
+                    str_index = 0; // Reset after printing
+                }
             }
             break;
         case 1: // Read data until ETX
