@@ -1,4 +1,7 @@
+#include "log.h"
 #include "process_data_packet.h"
+#include <string.h>
+
 
 uint8_t calculateCRC(const uint8_t *data, uint8_t length)
 {
@@ -34,7 +37,7 @@ uint8_t decoderData(const uint8_t *src, uint8_t len, uint8_t *dst)
         uint8_t b = src[i];
         if (b == SPACE) {
             if (i + 1 >= len) {
-                printf("Decoding error: SPACE at end of buffer.\n");
+                LOG("Decoding error: SPACE at end of buffer.\n");
                 break;
             }
             dst[idx++] = src[++i] ^ SPACE; // unescape
@@ -74,14 +77,14 @@ uint8_t decoderAllPackage(const uint8_t *src, uint8_t len, uint8_t *dst)
 
     // Check CRC validity
     if (idx < 2) {
-        printf("Invalid package size, discarding.\n");
+        LOG("Invalid package size, discarding.\n");
         return 0;
     }
 
     uint8_t received_crc = buff[idx - 1];
     uint8_t calculated_crc = calculateCRC(buff, idx - 1);
     if (received_crc != calculated_crc) {
-        printf("CRC mismatch, discarding package. Received: %02X, Calculated: %02X\n", received_crc,
+        LOG("CRC mismatch, discarding package. Received: %02X, Calculated: %02X\n", received_crc,
                calculated_crc);
         return 0;
     }
@@ -98,11 +101,14 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
 {
     // Buffer for reading only serial data (not STX, ETX)
     static uint8_t rx_buffer[BUFFER_SIZE] = {0};
-    static uint8_t str_buffer[BUFFER_SIZE] = {0};
     static uint8_t step = 0;
     static uint8_t buf_index = 0;
-    static uint16_t str_index = 0;
 
+#ifndef ARDUINO
+    // For non-Arduino platform, print received byte
+    static uint16_t str_index = 0;
+    static uint8_t str_buffer[BUFFER_SIZE] = {0};
+#endif
 
     // step 1:
     switch (step) {
@@ -110,13 +116,18 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
             if (byte == STX) {
                 buf_index = 0;
                 step = 1;
+#ifndef ARDUINO
+                // Reset debug string buffer
+                LOG("UART_MSG: %s\n", str_buffer);
+                memset(str_buffer, 0, BUFFER_SIZE);
+                str_index = 0;
             } else {
                 str_buffer[str_index++] = byte;
                 // Check for buffer overflow
-                if (str_index >= (BUFFER_SIZE-1)) {
+                if (str_index >= (BUFFER_SIZE - 1)) {
                     // Print debug string
                     str_buffer[BUFFER_SIZE - 1] = '\0'; // Ensure null-termination
-                    printf("UART_MSG: %s\n", str_buffer);
+                    LOG("UART_MSG: %s\n", str_buffer);
                     memset(str_buffer, 0, BUFFER_SIZE);
                     str_index = 0; // Reset on overflow
                 }
@@ -124,25 +135,26 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
                 if (byte == '\n' || byte == '\r') {
                     // Print debug string
                     if (str_index > 1) {
-                        printf("UART_MSG: %s\n", str_buffer);
+                        LOG("UART_MSG: %s\n", str_buffer);
                     }
                     memset(str_buffer, 0, BUFFER_SIZE);
                     str_index = 0; // Reset after printing
                 }
+#endif
             }
             break;
         case 1: // Read data until ETX
 
             // Check for buffer overflow
             if (buf_index >= (BUFFER_SIZE - 1)) {
-                printf("Buffer overflow, discarding data.\n");
+                LOG("Buffer overflow, discarding data.\n");
                 step = 0;
                 break;
             }
 
             // Check missing ETX
             if (byte == STX) {
-                printf("Missing ETX, discarding data.\n");
+                LOG("Missing ETX, discarding data.\n");
                 buf_index = 0;
                 break;
             }
@@ -154,7 +166,7 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
 
                 // Check data length minimum length: Type
                 if (decoded_length < 1) {
-                    printf("Invalid package size, discarding.\n");
+                    LOG("Invalid package size, discarding.\n");
                     step = 0;
                     break;
                 } else {

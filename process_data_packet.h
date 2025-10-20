@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 
 #define STX         0xAA
 #define ETX         0xDD
@@ -10,11 +8,11 @@
 #define CRC_SIZE    1
 
 
-#ifndef Arduino_h
+#ifndef ARDUINO
 #define BUFFER_SIZE 256
 #else
 #define BUFFER_SIZE 128
-#endif // Arduino_h
+#endif // ARDUINO
 
 // Format packet: STX | Data... | CRC | ETX
 
