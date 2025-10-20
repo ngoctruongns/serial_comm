@@ -118,7 +118,11 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
                 step = 1;
 #ifndef ARDUINO
                 // Reset debug string buffer
-                LOG("UART_MSG: %s\n", str_buffer);
+                if (str_index > 0) {
+                    // Print debug string
+                    str_buffer[str_index] = '\0'; // Null-terminate
+                    LOG("UART_MSG: %s\n", str_buffer);
+                }
                 memset(str_buffer, 0, BUFFER_SIZE);
                 str_index = 0;
             } else {
