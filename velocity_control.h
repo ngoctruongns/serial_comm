@@ -7,6 +7,8 @@ enum {
     DEBUG_STRING = 0,
     CMD_VEL_COMMAND,
     WHEEL_ENC_COMMAND,
+    PID_CONFIG_COMMAND,
+    MAX_COMMAND_TYPE
 };
 
 // Velocity command package format:
@@ -20,4 +22,11 @@ struct WheelEncType {
     uint8_t type;
     int32_t left_enc;   // Left wheel encoder
     int32_t right_enc;  // Right wheel encoder
+} __attribute__((packed));
+
+struct PIDConfigType {
+    uint8_t type;
+    float Kp;
+    float Ki;
+    float Kd;
 } __attribute__((packed));
