@@ -112,8 +112,8 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
     static uint8_t step = 0;
     static uint8_t buf_index = 0;
 
-#ifndef ARDUINO
-    // For non-Arduino platform, print received byte
+#if SERIAL_COMM_ENABLE_HOST_TEXT_STREAM
+    // For host/laptop platform, collect and print plain text bytes
     static uint16_t str_index = 0;
     static uint8_t str_buffer[BUFFER_SIZE] = {0};
 #endif
@@ -124,7 +124,7 @@ uint8_t handleRxByteConcurrent(uint8_t byte, uint8_t *dest)
             if (byte == STX) {
                 buf_index = 0;
                 step = 1;
-#ifndef ARDUINO
+#if SERIAL_COMM_ENABLE_HOST_TEXT_STREAM
                 // Reset debug string buffer
                 if (str_index > 0) {
                     // Print debug string

@@ -14,6 +14,16 @@
 #define BUFFER_SIZE 128
 #endif // ARDUINO
 
+// Enable host-only plain-text UART parsing (bytes outside STX/ETX packet)
+// Default: disabled on embedded targets (Arduino, STM32F407), enabled on host/laptop
+#ifndef SERIAL_COMM_ENABLE_HOST_TEXT_STREAM
+#if defined(ARDUINO) || defined(STM32F407xx)
+#define SERIAL_COMM_ENABLE_HOST_TEXT_STREAM 0
+#else
+#define SERIAL_COMM_ENABLE_HOST_TEXT_STREAM 1
+#endif
+#endif
+
 // Format packet: STX | Data... | CRC | ETX
 
 #ifdef __cplusplus
