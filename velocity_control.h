@@ -23,6 +23,26 @@ enum {
     FEEDBACK_ALL = 0xFF
 };
 
+// Define LED types for LED control command
+enum
+{
+    LED_TYPE_OFF        = 0,
+    LED_TYPE_SOLID      = 1,
+    LED_TYPE_BLINK      = 2,
+    LED_TYPE_RAINBOW    = 3,
+    LED_TYPE_BREATH     = 4,
+    LED_TYPE_CHASE      = 5,
+    LED_TYPE_MAX        = 6
+};
+
+// Define buzzer types for buzzer control command
+enum {
+    BUZZER_TYPE_SOLID   = 0,
+    BUZZER_TYPE_BLINK   = 1,
+    BUZZER_TYPE_BEEP    = 2,
+    BUZZER_TYPE_MAX     = 3
+};
+
 // Velocity command package format:
 struct CmdVelType {
     uint8_t type;
@@ -45,12 +65,14 @@ struct PIDConfigType {
 
 // Communication Control type
 struct CommCtrlType {
+    uint8_t type;
     uint8_t feedback;
 } __attribute__((packed));
 
 // LED control command (solid, blink, rainbow, etc.)
 struct LEDControlType {
-    uint8_t type; // LED display type (solid, blink, rainbow, etc.)
+    uint8_t type;
+    uint8_t led_type; // LED display type (solid, blink, rainbow, etc.)
     uint8_t r; // Red value
     uint8_t g; // Green value
     uint8_t b; // Blue value
@@ -60,7 +82,8 @@ struct LEDControlType {
 
 // Buzzer control command
 struct BuzzerControlType {
-    uint8_t type; // Buzzer type (beep, blink, etc.)
+    uint8_t type;
+    uint8_t buzzer_type; // Buzzer type (beep, blink, etc.)
     uint16_t param1; // Additional parameter 1 (e.g. beep duration)
     uint16_t param2; // Additional parameter 2 (e.g. blink on duration)
 } __attribute__((packed));
